@@ -1,2 +1,2 @@
 <?php
-include 'player.html';
+include 'index.html';
