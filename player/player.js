@@ -1198,20 +1198,20 @@ window.addEventListener('load', function() {
   }
 
   // Получаем название колод Anki или формируем его
-  let deckName = localStorage.getItem('deckName');
+  /*let deckName = localStorage.getItem('deckName');
   if(!deckName){
     deckName = "player_" + selectSl.value + "_" + selectTl.value;
     localStorage.setItem('deckName', deckName);
     
-  }
+  }*/
 
   // Создаем колоду Anki при клике по кнопке
-  createDeckButton.addEventListener('click', function(event) {
+  /*createDeckButton.addEventListener('click', function(event) {
     toAnki('createDeck', 6, {deck: deckName});
-  });
+  });*/
 
   // Создаем модель Anki при клике по кнопке
-  createModelButton.addEventListener('click', function(event) {
+  /*createModelButton.addEventListener('click', function(event) {
     params = {
         "modelName": "player",
         "inOrderFields": ["Word", "Translation", "Sentence", "Sentence_Translation"],
@@ -1225,11 +1225,11 @@ window.addEventListener('load', function() {
         ]
     };
     toAnki('createModel', 6, params);
-  });
+  });*/
 
 
   // Сохраняем слово
-  translationBox.addEventListener('click', function(event) {
+  /*translationBox.addEventListener('click', function(event) {
     if(event.target.classList.contains('source-text') || event.target.classList.contains('alternative-translation')){
       let wordToSave = '';
       let transText = '';
@@ -1268,7 +1268,7 @@ window.addEventListener('load', function() {
       toAnki('guiAddCards', 6, params);
     }
     
-  });
+  });*/
 
   // Прячем правую панель
   function toggleRightBar() {
