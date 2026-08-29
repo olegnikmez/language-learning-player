@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="../mt.png" type="image/icon type">
+  <script src="player/marked.min.js"></script>
+  <script src="player/player.js"></script>
+  <link href="player/player.css" rel="stylesheet" type="text/css">
+  <title>Видеоплеер с двумя субтитрами</title>
+</head>
+<body>
+  <div id="left_bar">
+    <div class="buttonsBlock">
+      <label for="videoFile" id="videoFileLabel">Видео / аудио</label>
+      <input type="file" id="videoFile" accept="video/*, audio/*" style="display: none;">
+      <br>
+      <label for="subtitlesTop" id="subtitlesTopLabel">Основные субтитры (srt)</label>
+      <input type="file" id="subtitlesTop" accept=".srt" style="display: none;">
+      <br>
+      <label for="subtitlesBottom" id="subtitlesBottomLabel">Перевод  (srt)</label>
+      <input type="file" id="subtitlesBottom" accept=".srt" style="display: none;">
+      <br>
+      <label class="stopAfterSubtitleSet" for="stopAfterSubtitle">
+        <input type="checkbox" id="stopAfterSubtitle" checked>
+        Останавливать после каждого субтитра
+      </label><br>
+      <label class="hide-right-bar" for="hide-right-bar">
+        <input type="checkbox" id="hide-right-bar">
+        H - cкрыть правую панель
+      </label><br>
+      <select id="background-color" name="background-color" title="Цвет фона">
+        <option value="#FFFFFF" style="background-color: #FFFFFF;">&nbsp;</option>
+        <option value="#FFFFFF" style="background-color: #FFFFFF;">&nbsp;</option>
+        <option value="#ededed" style="background-color: #ededed;">&nbsp;</option>
+        <option value="#dcdcdc" style="background-color: #dcdcdc;">&nbsp;</option>
+        <option value="#fff0f5" style="background-color: #fff0f5;">&nbsp;</option>
+        <option value="#f0ffff" style="background-color: #f0ffff;">&nbsp;</option>
+        <option value="#f5deb3" style="background-color: #f5deb3;">&nbsp;</option>
+        <option value="#e6e6fa" style="background-color: #e6e6fa;">&nbsp;</option>
+        <option value="#f0e68c" style="background-color: #f0e68c;">&nbsp;</option>
+        <option value="#fff18fdb" style="background-color: #fff18fdb">&nbsp;</option>
+        <option value="#f5f5dc" style="background-color: #f5f5dc;">&nbsp;</option>
+        <option value="#fffacd" style="background-color: #fffacd;">&nbsp;</option>
+        <option value="#ffffe0" style="background-color: #ffffe0;">&nbsp;</option>
+        <option value="#d0ffd0" style="background-color: #d0ffd0;">&nbsp;</option>
+        <option value="#93ff93" style="background-color: #93ff93;">&nbsp;</option>
+        <option value="#7bff7b" style="background-color: #7bff7b;">&nbsp;</option>
+      </select>
+    </div>
+    
+    <hr style="margin: 10px 0 0 0; border: 0; border-top: 1px solid #cfcfcf;">
+    
+    <!-- Раскрывающийся блок: Горячие клавиши -->
+    <details class="settings-toggle">
+      <summary>Подсказки горячих клавиш</summary>
+      <div class="buttonsBlock">
+        <div class="keysprav"><b>А</b> - Предыдущий</div> <div class="keysprav"><b>D</b> - Следующий</div><br>
+        <div class="keysprav"><b>S</b> - Повторить</div> <div class="keysprav"><b>X или E</b> - Stop/Play</div>
+        <div class="keysprav"><b>Q</b> - Показать/скрыть субтитры</div><br>
+        <div class="keysprav"><b>W</b> - Показать/скрыть перевод</div><br>
+        <div class="keysprav"><b>Ctrl и мышка</b> - Оставить перевод Google</div>
+        <div class="keysprav" title="Левой кнопкой мышки - выравнивание по верхнему краю &#13;&#10;Правой кнопкой мышки - выравнивание по нижнему краю" style="cursor: pointer;"><b>M и мышка</b> - Двигать блоки субтитров</div>
+        <div class="keysprav"><b>ESC</b> - Убрать перевод Google</div>
+        <div class="keysprav"><b>Ctrl+R</b> - Удалить настройки</div>
+      </div>
+    </details>
+
+    <!-- Раскрывающийся блок: Языки перевода -->
+    <details class="settings-toggle">
+      <summary>Языки перевода</summary>
+      <div class="buttonsBlock">
+          <select name="sl" id="sl" title="Исходный язык">
+            <option value="ru" srcLang="1049">Русский</option>
+            <option value="uk" srcLang="1058">Украинский</option>
+            <option value="pl" srcLang="">Польский</option>
+            <option value="en" srcLang="1033" selected>Английский</option>
+            <option value="fr" srcLang="1036">Французский</option>
+            <option value="es" srcLang="1034">Испанский</option>
+            <option value="it" srcLang="1040">Итальянский</option>
+            <option value="de" srcLang="1031">Немецкий</option>
+          </select>
+          <select name="tl" id="tl" title="Целевой язык">
+            <option value="ru" dstLang="1049" selected >Русский</option>
+            <option value="uk" dstLang="1058">Украинский</option>
+            <option value="pl" dstLang="">Польский</option>
+            <option value="en" dstLang="1033">Английский</option>
+            <option value="fr" dstLang="1036">Французский</option>
+            <option value="es" dstLang="1034">Испанский</option>
+            <option value="it" dstLang="1040">Итальянский</option>
+            <option value="de" dstLang="1031">Немецкий</option>
+          </select>
+      </div>
+    </details>
+
+    <!-- Раскрывающийся блок: Настройки нейросети -->
+    <details class="settings-toggle">
+      <summary>Настройки нейросети (DeepSeek)</summary>
+      <div class="buttonsBlock">
+        <label for="deepseekApiKey" style="display:block; margin-bottom:5px;">API-ключ DeepSeek:</label>
+        <input type="password" id="deepseekApiKey" style="width: 90%; padding: 5px; margin-bottom: 10px;" placeholder="sk-...">
+        
+        <label for="deepseekInstruction" style="display:block; margin-bottom:5px;">Инструкция нейросети:</label>
+        <textarea id="deepseekInstruction" style="width: 90%; padding: 5px;" rows="3" placeholder="Введите инструкцию..."></textarea>
+      </div>
+    </details>
+
+    <!-- Раскрывающийся блок: Дополнительные инструменты -->
+    <details class="settings-toggle" style="border-bottom: none;">
+      <summary>Инструменты (Anki и Текст)</summary>
+      <div class="buttonsBlock">
+        <div class="keysprav" id="createDeck" title="Колода создается для выбранных языков" style="cursor: pointer;"><b>Anki</b> - создать колоду</div>
+        <div class="keysprav" id="createModel" title="Создаем модель в Anki" style="cursor: pointer;">Создать модель</div>
+        <div style="margin-top: 10px;">
+          <a href="textFix.html" class="keysprav" target="_blank" title="Удаление лишнего, разбитие на главы" style="text-decoration: none; color: black;">Подготовка текста</a>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div id="videoContainer">
+    <video controls id="videoPlayer">
+      Ваш браузер не поддерживает воспроизведение видео.
+    </video>
+    <div id="videoSubtitlesTop" style="display:none;" class="top-chengeble"></div>
+    <div id="videoSubtitlesBottom" style="display:none;" class="top-chengeble"></div>
+  </div>
+  <div id="allTopSubsContainer">
+    <div id="allTopSubs"></div>
+  </div>
+  <div class="translation-box" style="display: none;"></div>
+</body>
+</html>

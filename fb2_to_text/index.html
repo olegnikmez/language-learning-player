@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FB2 Parser & Chapter Splitter</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="container">
+        <!-- Общие настройки -->
+        <section class="card config-section">
+            <div class="control-group">
+                <label for="separatorInput">Глобальный разделитель глав:</label>
+                <input type="text" id="separatorInput" value="---***---***---">
+            </div>
+        </section>
+
+        <div class="modules-grid">
+            <!-- Модуль 1: FB2 -> TXT -->
+            <section class="card module-card">
+                <h2>Модуль 1: Извлечение текста (FB2)</h2>
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="fb2File">Исходный файл (.fb2):</label>
+                        <input type="file" id="fb2File" accept=".fb2">
+                    </div>
+                    <div class="button-group">
+                        <button id="processBtn" disabled>Обработать FB2</button>
+                        <button id="downloadBtn" disabled>Скачать .txt</button>
+                    </div>
+                </div>
+                <textarea id="outputText" readonly placeholder="Предпросмотр извлеченного текста..."></textarea>
+            </section>
+
+            <!-- Модуль 2: TXT -> Главы -->
+            <section class="card module-card">
+                <h2>Модуль 2: Нарезка на главы (TXT)</h2>
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="txtFile">Откорректированный файл (.txt):</label>
+                        <input type="file" id="txtFile" accept=".txt">
+                    </div>
+                </div>
+                
+                <div class="chapters-container">
+                    <h3>Список глав для скачивания:</h3>
+                    <div id="chapterButtons" class="chapter-list">
+                        <span class="placeholder">Загрузите txt-файл для генерации кнопок</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
