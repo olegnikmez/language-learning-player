@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Украина (верхний левый квадрат: сине-желтый) -->
+  <rect x="0" y="0" width="50" height="25" fill="#0057b7" />
+  <rect x="0" y="25" width="50" height="25" fill="#ffd700" />
+  
+  <!-- Великобритания (верхний правый квадрат: стилизованный Union Jack) -->
+  <rect x="50" y="0" width="50" height="50" fill="#012169" />
+  <line x1="50" y1="0" x2="100" y2="50" stroke="#fff" stroke-width="6" />
+  <line x1="100" y1="0" x2="50" y2="50" stroke="#fff" stroke-width="6" />
+  <line x1="50" y1="0" x2="100" y2="50" stroke="#c8102e" stroke-width="2" />
+  <line x1="100" y1="0" x2="50" y2="50" stroke="#c8102e" stroke-width="2" />
+  <line x1="75" y1="0" x2="75" y2="50" stroke="#fff" stroke-width="10" />
+  <line x1="50" y1="25" x2="100" y2="25" stroke="#fff" stroke-width="10" />
+  <line x1="75" y1="0" x2="75" y2="50" stroke="#c8102e" stroke-width="6" />
+  <line x1="50" y1="25" x2="100" y2="25" stroke="#c8102e" stroke-width="6" />
+
+  <!-- Германия (нижний левый квадрат: черно-красно-желтый) -->
+  <rect x="0" y="50" width="50" height="16.66" fill="#000000" />
+  <rect x="0" y="66.66" width="50" height="16.66" fill="#dd0000" />
+  <rect x="0" y="83.33" width="50" height="16.67" fill="#ffcc00" />
+
+  <!-- Франция (нижний правый квадрат: сине-бело-красный) -->
+  <rect x="50" y="50" width="16.66" height="50" fill="#002395" />
+  <rect x="66.66" y="50" width="16.66" height="50" fill="#ffffff" />
+  <rect x="83.33" y="50" width="16.67" height="50" fill="#ed2939" />
+
+  <!-- Центральный элемент (play button / arrow) для обозначения плеера -->
+  <polygon points="35,25 75,50 35,75" fill="#ffffff" stroke="#333" stroke-width="2" />
+</svg>
