@@ -870,13 +870,33 @@ window.addEventListener('load', function() {
   videoSubtitlesTop.addEventListener('click', function(event) {
     if (event.target.classList.contains('toTranslate') && event.button === 0 && !keyMPressed) {
       const textToSpeak = event.target.textContent;
+      const language = selectSl.value; // Получаем код языка из селекта (например, 'de')
+
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.lang = language;
+
+      // Принудительно ищем подходящий голос в системе
+      const voices = window.speechSynthesis.getVoices();
+      // Ищем голос, который начинается с нужного кода (например, 'de-DE' или 'de-AT')
+      const targetVoice = voices.find(v => v.lang.startsWith(language));
+      
+      if (targetVoice) {
+        utterance.voice = targetVoice; // Явно назначаем голос, если он найден
+      }
+
+      speechSynthesis.speak(utterance);
+    }
+
+
+    /*if (event.target.classList.contains('toTranslate') && event.button === 0 && !keyMPressed) {
+      const textToSpeak = event.target.textContent;
       const language = selectSl.value;
 
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
       utterance.lang = language;
 
       speechSynthesis.speak(utterance);
-    }
+    }*/
   });
 
   // Взаимодействие с anki
