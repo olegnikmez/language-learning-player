@@ -1,22 +1,36 @@
 // Базовая функция для отправки команд в локальный AnkiConnect
 async function invokeAnki(action, params = {}) {
+    let response;
+    
+    // 1. Проверяем физическое подключение к локальному серверу Anki
     try {
-        const response = await fetch('http://127.0.0.1:8765', {
+        response = await fetch('http://127.0.0.1:8765', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: action, version: 6, params: params })
         });
-        const data = await response.json();
-        
-        if (data.error) {
-            throw new Error(data.error);
-        }
-        return data.result;
     } catch (error) {
+        // Ошибка сети (Anki выключен или сбились настройки CORS)
         alert('Ошибка подключения к Anki! Убедитесь, что программа Anki запущена, и плагин AnkiConnect установлен.');
-        console.error('AnkiConnect Error:', error);
+        console.error('AnkiConnect Fetch Error:', error);
         return null;
     }
+
+    // 2. Обрабатываем ответ от самого AnkiConnect
+    const data = await response.json();
+    
+    if (data.error) {
+        // Если Anki вернул ошибку, проверяем её текст
+        if (data.error.includes('duplicate')) {
+            alert('Такая карточка уже существует в вашей колоде (дубликат)!');
+        } else {
+            alert('Ошибка Anki: ' + data.error);
+        }
+        console.error('AnkiConnect API Error:', data.error);
+        return null;
+    }
+    
+    return data.result;
 }
 
 // Функция добавления карточки (Note) в Anki

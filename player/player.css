@@ -254,7 +254,7 @@ video::-webkit-media-controls-enclosure {
   width: 100vw !important;
 }
 .moving {
-  z-index: 9999 !important;
+  z-index: 999 !important;
   cursor: move;
 }
 
@@ -337,6 +337,39 @@ video::-ms-media-controls-panel {
   margin-top: 10px;
   padding-left: 5px;
   font-weight: normal;
+}
+
+/* Стили модального окна Anki */
+.anki-modal {
+  display: none; 
+  position: fixed; 
+  z-index: 9999; 
+  left: 0; 
+  top: 0; 
+  width: 100%; 
+  height: 100%; 
+  background-color: rgba(0,0,0,0.6);
+}
+.anki-modal-content {
+  background-color: #fff; 
+  margin: 5% auto; 
+  padding: 20px 25px;
+  border-radius: 8px; 
+  width: 80%; 
+  max-width: 600px; 
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  color: #333;
+}
+.anki-close {
+  color: #aaa; 
+  float: right; 
+  font-size: 28px; 
+  font-weight: bold; 
+  cursor: pointer; 
+  line-height: 1;
+}
+.anki-close:hover {
+  color: #000;
 }
 
 

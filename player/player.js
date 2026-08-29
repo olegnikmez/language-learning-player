@@ -62,6 +62,38 @@ window.addEventListener('load', function() {
   deepseekInstructionInput.addEventListener('change', (e) => localStorage.setItem('deepseekInstruction', e.target.value));
   // =======
 
+  // Обработка закрытия модального окна Anki
+  const ankiModal = document.getElementById('ankiEditModal');
+  const closeAnkiBtn = document.getElementById('closeAnkiModal');
+  
+  if (closeAnkiBtn) {
+      closeAnkiBtn.onclick = function() {
+          ankiModal.style.display = 'none';
+      };
+  }
+  // Закрытие по клику вне окна
+  // Переменная для отслеживания места, где началось нажатие
+  let ankiModalMousedownTarget = null;
+
+  window.addEventListener('mousedown', function(event) {
+      ankiModalMousedownTarget = event.target;
+  });
+
+  // Закрытие окна только в том случае, если и нажатие, и отпускание были строго на темном фоне
+  window.addEventListener('mouseup', function(event) {
+      if (event.target === ankiModal && ankiModalMousedownTarget === ankiModal) {
+          ankiModal.style.display = 'none';
+      }
+  });
+
+  // Создание списка по Ctrl + L в редакторе Anki
+  document.getElementById('ankiTranslationInput').addEventListener('keydown', function(e) {
+      if (e.ctrlKey && e.code === 'KeyL') {
+          e.preventDefault();
+          document.execCommand('insertUnorderedList', false, null);
+      }
+  });
+
   videoFileInput.addEventListener('change', (event) => {
     const file = event.target.files[0];
     const fileType = file.type;
@@ -301,6 +333,37 @@ window.addEventListener('load', function() {
     scrollSubtitleIntoView();
   }
 
+  // --- ГЛОБАЛЬНАЯ БЛОКИРОВКА КЛАВИШ ПРИ ВВОДЕ ТЕКСТА ---
+  // Стоит первым, чтобы перехватить нажатия до того, как они дойдут до слушателей плеера
+  document.addEventListener('keydown', function(event) {
+      const ankiModal = document.getElementById('ankiEditModal');
+      const isAnkiOpen = ankiModal && ankiModal.style.display === 'block';
+      
+      // Проверяем, находится ли курсор в любом текстовом поле (включая настройки DeepSeek)
+      const activeElement = document.activeElement;
+      const isTyping = activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.isContentEditable;
+
+      if (isAnkiOpen || isTyping) {
+          // Если нажали Esc при открытом окне Anki — закрываем его
+          if (isAnkiOpen && (event.code === 'Escape' || event.keyCode === 27)) {
+              ankiModal.style.display = 'none';
+          }
+          
+          // Жестко блокируем передачу события дальше всем остальным обработчикам (A, S, D и т.д.)
+          // При этом печатать текст это не помешает, так как браузерный ввод работает на другом уровне
+          event.stopImmediatePropagation();
+          return;
+      }
+
+      // Возвращаем функцию закрытия панели DeepSeek по Esc (если не набираем текст)
+      if (event.code === 'Escape' || event.keyCode === 27) {
+          isDeepSeekActive = false; 
+          translationBox.innerHTML = "";
+          translationBox.style.display = 'none';
+      }
+  });
+  // -----------------------------------------------------
+
   // Удаление настроек по клавише Ctrl + R
   document.addEventListener('keydown', function(event) {
     if (event.code === 'KeyR' && event.ctrlKey) { 
@@ -462,6 +525,41 @@ window.addEventListener('load', function() {
     // Безопасное экранирование предложения для атрибутов
     const safeSentence = escapeHtml(sentence);
 
+    // Встроенная SVG иконка Google Translate
+    const googleIcon = `<svg class="toTranslate" sentence="${safeSentence}" role="img" aria-label="Перевести в Google" xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" fill="white" style="cursor: pointer; vertical-align: middle; margin-left: 8px; opacity: 0.9;">
+      <title>Перевести в Google</title>
+      <path style="pointer-events: none;" d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/>
+    </svg>`;
+
+    // Идеально ровная, плоская иконка нейросети (Bot) 
+    const aiIcon = `<svg class="aiTranslate" sentence="${safeSentence}" role="img" aria-label="Спросить нейросеть" xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer; vertical-align: middle; margin-left: 10px; opacity: 0.9;">
+      <title>Спросить нейросеть</title>
+      <rect width="18" height="14" x="3" y="8" rx="2" style="pointer-events: none;"/>
+      <path d="M12 5a3 3 0 1 0-3 3" style="pointer-events: none;"/>
+      <line x1="9" x2="15" y1="15" y2="15" style="pointer-events: none;"/>
+      <line x1="9" x2="9.01" y1="12" y2="12" style="pointer-events: none;"/>
+      <line x1="15" x2="15.01" y1="12" y2="12" style="pointer-events: none;"/>
+    </svg>`;
+
+    // Новая иконка добавления всего предложения в Anki (Плюс в квадрате)
+    const ankiIcon = `<svg class="ankiAddBtn" sentence="${safeSentence}" role="img" aria-label="Добавить предложение в Anki" xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer; vertical-align: middle; margin-left: 10px; opacity: 0.9;">
+      <title>Добавить предложение в Anki</title>
+      <rect width="18" height="18" x="3" y="3" rx="2" style="pointer-events: none;"/>
+      <line x1="12" x2="12" y1="8" y2="16" style="pointer-events: none;"/>
+      <line x1="8" x2="16" y1="12" y2="12" style="pointer-events: none;"/>
+    </svg>`;
+
+    // Собираем всё вместе без внешних картинок
+    const sentenceWithImg = wrappedWords.join(" ") + googleIcon + ankiIcon + aiIcon ;
+    return sentenceWithImg;  
+  }
+  /*function wrapWordsInSpan(sentence) {
+    const words = sentence.split(" ");
+    const wrappedWords = words.map(word => `<span class="toTranslate">${word}</span>`);
+    
+    // Безопасное экранирование предложения для атрибутов
+    const safeSentence = escapeHtml(sentence);
+
     // Встроенная SVG иконка Google Translate (заменяет translateWhite.png)
     const googleIcon = `<svg class="toTranslate" sentence="${safeSentence}" xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" fill="white" style="cursor: pointer; vertical-align: middle; margin-left: 8px; opacity: 0.9;" title="Перевести в Google">
       <path style="pointer-events: none;" d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/>
@@ -479,7 +577,7 @@ window.addEventListener('load', function() {
     // Собираем всё вместе без внешних картинок
     const sentenceWithImg = wrappedWords.join(" ") + googleIcon + aiIcon;
     return sentenceWithImg;  
-  }
+  }*/
 
   /*function wrapWordsInSpan(sentence) {
     const words = sentence.split(" ");
@@ -568,6 +666,59 @@ window.addEventListener('load', function() {
 
   // Обработка клика по иконке DeepSeek
   videoSubtitlesTop.addEventListener('click', async function(event) {
+
+
+    // Обработка клика по иконке добавления всего предложения в Anki
+    const ankiBtnFull = event.target.closest('.ankiAddBtn');
+    if (ankiBtnFull) {
+        // Опционально: ставим видео на паузу для удобства редактирования
+        if (typeof videoPlayer !== 'undefined' && !videoPlayer.paused) {
+            videoPlayer.pause();
+        }
+
+        const sentence = ankiBtnFull.getAttribute('sentence');
+        
+        // Забираем перевод из нижних субтитров
+        const bottomSubBlock = document.getElementById('videoSubtitlesBottom');
+        const bottomTranslation = bottomSubBlock ? bottomSubBlock.textContent.trim() : '';
+
+        const modal = document.getElementById('ankiEditModal');
+        
+        // Заполняем поля редактора (Слово и Контекст = само предложение)
+        document.getElementById('ankiWordInput').value = sentence;
+        document.getElementById('ankiContextInput').value = sentence;
+        
+        // Заполняем поле разбора переводом из нижнего субтитра
+        document.getElementById('ankiTranslationInput').innerHTML = bottomTranslation;
+        
+        modal.style.display = 'block';
+        
+        const saveBtn = document.getElementById('saveToAnkiBtn');
+        saveBtn.onclick = async function() {
+            const editedWord = document.getElementById('ankiWordInput').value;
+            const editedContext = document.getElementById('ankiContextInput').value;
+            const editedTranslation = document.getElementById('ankiTranslationInput').innerHTML;
+            
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '⏳ Сохранение...';
+            saveBtn.style.pointerEvents = 'none';
+            
+            // Отправляем в Anki через уже существующую функцию в anki.js
+            const success = await addCardToAnki(editedWord, editedTranslation, editedContext);
+            
+            saveBtn.innerHTML = originalText;
+            saveBtn.style.pointerEvents = 'auto';
+            
+            if (success) {
+                modal.style.display = 'none';
+                // Визуальное подтверждение: иконка становится зеленой
+                ankiBtnFull.style.stroke = '#28a745'; 
+            }
+        };
+    }
+
+
+
     const aiBtn = event.target.closest('.aiTranslate');
     if (aiBtn) {
       isDeepSeekActive = true; // Блокируем панель от изменений
@@ -658,7 +809,7 @@ window.addEventListener('load', function() {
               
               textAfter.after(ankiBtn);
               
-              ankiBtn.onclick = async function() {
+              ankiBtn.onclick = function() {
                   const word = strongEl.textContent.trim();
                   const directTranslation = textAfter.textContent.replace(/^[—-\s]+/, '').trim();
                   
@@ -676,15 +827,7 @@ window.addEventListener('load', function() {
                   if (parent) {
                       let nextBlock = parent.nextElementSibling;
                       while (nextBlock) {
-                          // ОСТАНОВКА 1: Встретили тег разделителя <hr>
-                          if (nextBlock.tagName === 'HR') {
-                              break;
-                          }
-                          // ОСТАНОВКА 2: Встретили следующий размеченный заголовок фразы
-                          if (nextBlock.hasAttribute('data-phrase-header')) {
-                              break; 
-                          }
-                          
+                          if (nextBlock.tagName === 'HR' || nextBlock.hasAttribute('data-phrase-header')) break; 
                           detailsHTML += nextBlock.outerHTML;
                           nextBlock = nextBlock.nextElementSibling;
                       }
@@ -696,28 +839,50 @@ window.addEventListener('load', function() {
                       finalTranslation += `<br><br><div style="text-align: left; font-size: 16px; color: #333; line-height: 1.4;">${detailsHTML.trim()}</div>`;
                   }
                   
-                  // Визуальная индикация загрузки
-                  const originalText = ankiBtn.innerHTML;
-                  ankiBtn.innerHTML = ' ⏳...';
-                  ankiBtn.style.pointerEvents = 'none';
+                  // --- НОВОЕ: Открываем модальное окно вместо прямой отправки ---
+                  const modal = document.getElementById('ankiEditModal');
+                  document.getElementById('ankiWordInput').value = word;
+                  document.getElementById('ankiContextInput').value = sentence;
+                  // Используем innerHTML, чтобы сохранить верстку в редакторе
+                  document.getElementById('ankiTranslationInput').innerHTML = finalTranslation;
                   
-                  // Отправляем в Anki
-                  const success = await addCardToAnki(word, finalTranslation, sentence);
+                  modal.style.display = 'block';
                   
-                  if (success) {
-                      ankiBtn.innerHTML = ' ✔️ Добавлено';
-                      ankiBtn.style.background = '#28a745';
-                  } else {
-                      ankiBtn.innerHTML = originalText;
-                      ankiBtn.style.pointerEvents = 'auto';
-                  }
+                  // Обработка клика по кнопке "Сохранить в Anki" внутри модального окна
+                  const saveBtn = document.getElementById('saveToAnkiBtn');
+                  saveBtn.onclick = async function() {
+                      // Забираем уже отредактированные значения
+                      const editedWord = document.getElementById('ankiWordInput').value;
+                      const editedContext = document.getElementById('ankiContextInput').value;
+                      const editedTranslation = document.getElementById('ankiTranslationInput').innerHTML;
+                      
+                      const originalText = saveBtn.innerHTML;
+                      saveBtn.innerHTML = '⏳ Сохранение...';
+                      saveBtn.style.pointerEvents = 'none';
+                      
+                      // Отправляем в Anki
+                      const success = await addCardToAnki(editedWord, editedTranslation, editedContext);
+                      
+                      saveBtn.innerHTML = originalText;
+                      saveBtn.style.pointerEvents = 'auto';
+                      
+                      if (success) {
+                          modal.style.display = 'none';
+                          ankiBtn.innerHTML = ' ✔️ Добавлено';
+                          ankiBtn.style.background = '#28a745';
+                      }
+                  };
               };
           });
           // --- КОНЕЦ НОВОГО КОДА ---
 
 
-
+        
           
+
+
+
+
         } else {
           translationBox.innerHTML = `<div style="padding: 20px;">Ошибка ответа: ${JSON.stringify(data)}</div>`;
         }
@@ -778,14 +943,15 @@ window.addEventListener('load', function() {
   }
 
 
-  document.addEventListener("keydown", function(event) {
+  /*document.addEventListener("keydown", function(event) {
+    const ankiModal = document.getElementById('ankiEditModal');
     if (event.keyCode === 27) { // если нажата клавиша "Esc" (код 27)
       isDeepSeekActive = false; // Снимаем блокировку
       translationBox.innerHTML = "";
       translationBox.style.display = 'none';
       // videoPlayer.play();
     }
-  });
+  });*/
 
   // Формирование блока перевода из ответа Google Translate API 
   function createTranslationBlock(response) {

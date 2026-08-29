@@ -63,6 +63,12 @@
         <div class="keysprav" title="Левой кнопкой мышки - выравнивание по верхнему краю &#13;&#10;Правой кнопкой мышки - выравнивание по нижнему краю" style="cursor: pointer;"><b>M и мышка</b> - Двигать блоки субтитров</div>
         <div class="keysprav"><b>ESC</b> - Убрать перевод Google</div>
         <div class="keysprav"><b>Ctrl+R</b> - Удалить настройки</div>
+
+        <!-- Подсказки для текстового редактора -->
+        <summary>Для текстового редактора</summary>
+        <div class="keysprav"><b>Ctrl+L</b> - Создать список (маркеры)</div>
+        <div class="keysprav"><b>Ctrl+B</b> - Жирный шрифт</div>
+        <div class="keysprav"><b>Shift+Enter</b> - Перенос строки без точки</div>
       </div>
     </details>
 
@@ -129,5 +135,25 @@
     <div id="allTopSubs"></div>
   </div>
   <div class="translation-box" style="display: none;"></div>
+
+  <!-- Модальное окно для редактирования карточки Anki -->
+  <div id="ankiEditModal" class="anki-modal">
+    <div class="anki-modal-content">
+      <span class="anki-close" id="closeAnkiModal">&times;</span>
+      <h3 style="margin-top: 0; color: #111;">Редактирование карточки Anki</h3>
+      
+      <label>Слово / Фраза (Лицевая сторона):</label>
+      <input type="text" id="ankiWordInput" style="width: 100%; box-sizing: border-box; padding: 8px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 4px;">
+      
+      <label>Контекст (Предложение):</label>
+      <textarea id="ankiContextInput" rows="2" style="width: 100%; box-sizing: border-box; padding: 8px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit;"></textarea>
+      
+      <label>Перевод и разбор (Обратная сторона):</label>
+      <div id="ankiTranslationInput" contenteditable="true" style="width: 100%; box-sizing: border-box; min-height: 150px; max-height: 300px; overflow-y: auto; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; background: #fafafa; outline: none;"></div>
+      
+      <button id="saveToAnkiBtn" style="background: #28a745; color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 4px; cursor: pointer;">Сохранить в Anki</button>
+    </div>
+  </div>
+
 </body>
 </html>
