@@ -627,6 +627,97 @@ window.addEventListener('load', function() {
               <div class="translation-header markdown-body" style="font-size: 15px; font-weight: normal; margin-top: 10px;">${htmlAnswer}</div>
             </div>
           `;
+
+
+          // --- НОВЫЙ КОД: ДОБАВЛЕНИЕ КНОПОК ANKI ---
+          const blocks = translationBox.querySelectorAll('.markdown-body strong');
+          
+          // Шаг 1: Находим только ГЛАВНЫЕ фразы (исключаем списки и случайные слова)
+          const phraseBlocks = [];
+          blocks.forEach(strongEl => {
+              const textAfter = strongEl.nextSibling;
+              
+              // Ищем тире после жирного текста
+              if (textAfter && textAfter.nodeType === 3 && (textAfter.textContent.includes('—') || textAfter.textContent.includes('-'))) {
+                  const parent = strongEl.parentElement;
+                  
+                  // ВАЖНО: Игнорируем элементы внутри списков (LI), чтобы не вешать кнопки на каждое разобранное слово
+                  if (parent && parent.tagName !== 'LI') {
+                      parent.setAttribute('data-phrase-header', 'true');
+                      phraseBlocks.push({ strongEl, textAfter, parent });
+                  }
+              }
+          });
+
+          // Шаг 2: Расставляем кнопки и собираем контент
+          phraseBlocks.forEach(({ strongEl, textAfter, parent }) => {
+              const ankiBtn = document.createElement('span');
+              ankiBtn.innerHTML = ' ➕ в Anki';
+              ankiBtn.style.cssText = 'cursor: pointer; background: #1D9BF5; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 10px; user-select: none; transition: 0.2s;';
+              ankiBtn.title = 'Создать карточку с подробным разбором';
+              
+              textAfter.after(ankiBtn);
+              
+              ankiBtn.onclick = async function() {
+                  const word = strongEl.textContent.trim();
+                  const directTranslation = textAfter.textContent.replace(/^[—-\s]+/, '').trim();
+                  
+                  let detailsHTML = "";
+                  
+                  // 1. Берем остаток текста в текущем абзаце ПОСЛЕ кнопки
+                  let sibling = ankiBtn.nextSibling;
+                  while (sibling) {
+                      if (sibling.nodeType === 1) detailsHTML += sibling.outerHTML;
+                      else if (sibling.nodeType === 3) detailsHTML += sibling.textContent;
+                      sibling = sibling.nextSibling;
+                  }
+                  
+                  // 2. Собираем следующие абзацы, пока не упремся в <hr> или следующий смысловой блок
+                  if (parent) {
+                      let nextBlock = parent.nextElementSibling;
+                      while (nextBlock) {
+                          // ОСТАНОВКА 1: Встретили тег разделителя <hr>
+                          if (nextBlock.tagName === 'HR') {
+                              break;
+                          }
+                          // ОСТАНОВКА 2: Встретили следующий размеченный заголовок фразы
+                          if (nextBlock.hasAttribute('data-phrase-header')) {
+                              break; 
+                          }
+                          
+                          detailsHTML += nextBlock.outerHTML;
+                          nextBlock = nextBlock.nextElementSibling;
+                      }
+                  }
+                  
+                  // 3. Формируем финальный перевод
+                  let finalTranslation = directTranslation;
+                  if (detailsHTML.trim()) {
+                      finalTranslation += `<br><br><div style="text-align: left; font-size: 16px; color: #333; line-height: 1.4;">${detailsHTML.trim()}</div>`;
+                  }
+                  
+                  // Визуальная индикация загрузки
+                  const originalText = ankiBtn.innerHTML;
+                  ankiBtn.innerHTML = ' ⏳...';
+                  ankiBtn.style.pointerEvents = 'none';
+                  
+                  // Отправляем в Anki
+                  const success = await addCardToAnki(word, finalTranslation, sentence);
+                  
+                  if (success) {
+                      ankiBtn.innerHTML = ' ✔️ Добавлено';
+                      ankiBtn.style.background = '#28a745';
+                  } else {
+                      ankiBtn.innerHTML = originalText;
+                      ankiBtn.style.pointerEvents = 'auto';
+                  }
+              };
+          });
+          // --- КОНЕЦ НОВОГО КОДА ---
+
+
+
+          
         } else {
           translationBox.innerHTML = `<div style="padding: 20px;">Ошибка ответа: ${JSON.stringify(data)}</div>`;
         }

@@ -19,6 +19,35 @@ async function invokeAnki(action, params = {}) {
     }
 }
 
+// Функция добавления карточки (Note) в Anki
+async function addCardToAnki(word, translation, context) {
+    // Определяем текущий язык из селектора, чтобы положить карточку в нужную колоду
+    const slSelect = document.getElementById('sl');
+    const sl = slSelect ? slSelect.value : 'en'; 
+    const deckName = `Language_Player_${sl.toUpperCase()}`;
+    const modelName = 'Language_Player_Model';
+
+    const noteParams = {
+        note: {
+            deckName: deckName,
+            modelName: modelName,
+            fields: {
+                "Word": word,
+                "Translation": translation,
+                "Context": context,
+                "Audio": "" // Оставляем пустым, аудио можно настроить в самом Anki
+            },
+            options: {
+                allowDuplicate: false // Защита от дублей
+            },
+            tags: ["LanguagePlayer"]
+        }
+    };
+
+    const result = await invokeAnki('addNote', noteParams);
+    return result !== null; // Возвращает true, если успешно
+}
+
 // Ждем полной загрузки страницы, так как скрипт будет в <head>
 window.addEventListener('load', function() {
     const createDeckBtn = document.getElementById('createDeck');
