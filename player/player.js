@@ -241,42 +241,83 @@ window.addEventListener('load', function() {
 
   });
 
-  // Функция парсинга субтитров в формате srt
+  // Функция парсинга субтитров в форматах srt и lrc
   function parseSrt(data) {
     const subtitles = [];
-
-    const lines = data.split('\r\n');
     
-    let startTime, endTime, text;
-    for (let i = 0; i < lines.length; i++) {
-      // console.log(lines[i]); // Отладочный вывод
-      if (lines[i].match(/^\d+$/)) {
-        // Номер субтитра, пропускаем
-      } else if (lines[i].match(/^\d\d:\d\d:\d\d,\d\d\d --> \d\d:\d\d:\d\d,\d\d\d$/)) {
-        // Временные метки
-        const times = lines[i].split(' --> ');
-        startTime = convertTimeToSeconds(times[0]);
-        endTime = convertTimeToSeconds(times[1]);
-      } else if (lines[i].trim() === '') {
-        // Пустая строка, пропускаем
-      } else {
-        // Текст субтитра
-        text = escapeHtml(lines[i]);
-        i++;
-        while (i < lines.length && lines[i].trim() !== '') {
-          text += '\n' + lines[i];
-          i++;
+    // Используем регулярное выражение для поддержки переносов строк как \r\n (Windows), так и \n (Linux/Mac)
+    const lines = data.split(/\r?\n/);
+    
+    // Проверяем, является ли файл форматом LRC (ищем метку времени вида [00:00.00])
+    const isLrc = data.match(/^\[\d{2}:\d{2}\.\d{2,3}\]/m);
+
+    if (isLrc) {
+      // --- ОБРАБОТКА ФОРМАТА LRC ---
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        // Ищем метку вида [00:02.04] или [00:02.040] и захватываем текст после нее
+        const match = line.match(/^\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)/);
+        
+        if (match) {
+          const minutes = parseInt(match[1], 10);
+          const seconds = parseInt(match[2], 10);
+          
+          // Добавляем нули, если миллисекунды двузначные (например, .04 превращаем в .040)
+          const msStr = match[3].length === 2 ? match[3] + "0" : match[3];
+          const milliseconds = parseInt(msStr, 10) / 1000;
+          
+          const startTime = minutes * 60 + seconds + milliseconds;
+          const text = escapeHtml(match[4].trim());
+          
+          if (text !== '') {
+            subtitles.push({
+              startTime: startTime,
+              endTime: startTime + 5, // Временная заглушка, перезапишется ниже
+              text: text
+            });
+          }
         }
-        i--;
-        if (text && text.trim() !== '') {
-          subtitles.push({
-            startTime: startTime,
-            endTime: endTime,
-            text: text
-          });
+      }
+      
+      // Концом каждой фразы делаем время начала следующей
+      for (let i = 0; i < subtitles.length - 1; i++) {
+        subtitles[i].endTime = subtitles[i + 1].startTime;
+      }
+      
+    } else {
+      // --- ОБРАБОТКА СТАНДАРТНОГО ФОРМАТА SRT ---
+      let startTime, endTime, text;
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].match(/^\d+$/)) {
+          // Номер субтитра, пропускаем
+        } else if (lines[i].match(/^\d\d:\d\d:\d\d,\d\d\d --> \d\d:\d\d:\d\d,\d\d\d$/)) {
+          // Временные метки
+          const times = lines[i].split(' --> ');
+          startTime = convertTimeToSeconds(times[0]);
+          endTime = convertTimeToSeconds(times[1]);
+        } else if (lines[i].trim() === '') {
+          // Пустая строка, пропускаем
+        } else {
+          // Текст субтитра
+          text = escapeHtml(lines[i]);
+          i++;
+          while (i < lines.length && lines[i].trim() !== '') {
+            text += '\n' + lines[i];
+            i++;
+          }
+          i--;
+          if (text && text.trim() !== '') {
+            subtitles.push({
+              startTime: startTime,
+              endTime: endTime,
+              text: text
+            });
+          }
         }
       }
     }
+    
     return subtitles;
   }
 
